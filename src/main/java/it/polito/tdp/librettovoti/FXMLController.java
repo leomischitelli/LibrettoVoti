@@ -1,25 +1,99 @@
 package it.polito.tdp.librettovoti;
 
+
 import java.net.URL;
+import java.util.List;
 import java.util.ResourceBundle;
+
+import it.polito.tdp.librettovoti.model.Libretto;
+import it.polito.tdp.librettovoti.model.Voto;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.control.Label;
 
-public class FXMLController implements Initializable {
+public class FXMLController {
+
+    @FXML
+    private ResourceBundle resources;
+
+    @FXML
+    private URL location;
+
+    @FXML
+    private ComboBox<Integer> cmbPunti;
+
+    @FXML
+    private TextField txtNome;
     
     @FXML
-    private Label label;
-    
+    private Label txtStatus;
+
     @FXML
-    private void handleButtonAction(ActionEvent event) {
-        System.out.println("You clicked me!");
-        label.setText("Hello World!");
+    private TextArea txtVoti;
+
+	private Libretto model;
+
+    @FXML
+    void handleNuovoVoto(ActionEvent event) {
+    	//1. acquisizione e controllo dati
+    	String nome = txtNome.getText();
+    	Integer punti = cmbPunti.getValue();
+    	
+    	//controlli validita
+    	if(nome.equals("") || punti == null) {
+    		//errore, non posso eseguire l'operazione
+    		txtStatus.setVisible(true);
+    		txtStatus.setText("ERRORE: occorre inserire nome e voto\nSei entrato nel rione sbagliato\n");
+    		return;
+    	}
+    	
+    	//2. esecuzione dell'operazione (chiedere al Model di farla)
+
+    	boolean ok = model.add(new Voto(nome, punti));
+    	
+    	//3. visualizzazione e aggiornamento del risultato
+    	if(ok) {
+    		List<Voto> voti = model.getVoti();
+        	txtVoti.clear();
+        	txtVoti.appendText("Hai superato " + voti.size() + " esami\n");
+        	for(Voto v : voti) {
+        		txtVoti.appendText(v.toString() + "\n");
+        	}
+	    	txtNome.clear();
+	    	cmbPunti.setValue(null);
+	    	txtStatus.setText("");
+    	} else {
+    		txtStatus.setText("ERRORE: esame gia' esistente\nMa ch fa pigghj p cul?");    		
+    	}
     }
-    
-    @Override
-    public void initialize(URL url, ResourceBundle rb) {
-        // TODO
-    }    
+   
+    public void setModel(Libretto model) {
+    	this.model = model;
+    	
+    	List<Voto> voti = model.getVoti();
+    	txtVoti.clear();
+    	txtVoti.appendText("Hai superato " + voti.size() + " esami\n");
+    	for(Voto v : voti) {
+    		txtVoti.appendText(v.toString() + "\n");
+    	}
+
+    }
+
+    @FXML
+    void initialize() {
+        assert cmbPunti != null : "fx:id=\"cmbPunti\" was not injected: check your FXML file 'Scene.fxml'.";
+        assert txtNome != null : "fx:id=\"txtNome\" was not injected: check your FXML file 'Scene.fxml'.";
+        assert txtVoti != null : "fx:id=\"txtVoti\" was not injected: check your FXML file 'Scene.fxml'.";
+
+        
+        cmbPunti.getItems().clear();
+        for(int p = 18; p<=30; p++) {
+        	cmbPunti.getItems().add(p);
+        }
+        
+    }
+
 }
